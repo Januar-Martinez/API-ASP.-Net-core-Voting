@@ -1,11 +1,12 @@
-namespace API_ASP._Net_core_Voting.API.Common.Errors;
-
-public class AppException : Exception
+namespace API_ASP._Net_core_Voting.API.Common.Errors
 {
-    public int StatusCode { get; }
-
-    public AppException(string message, int statusCode = 400) : base(message)
+    public class AppException : Exception
     {
-        StatusCode = statusCode;
+        public int StatusCode { get; }
+
+        public AppException(string message, int statusCode = 400) : base(message)
+        {
+            StatusCode = statusCode;
+        }
     }
 }

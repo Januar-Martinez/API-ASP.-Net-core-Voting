@@ -1,36 +1,51 @@
-namespace API_ASP._Net_core_Voting.API.Extensions;
+using Microsoft.EntityFrameworkCore;
+using API_ASP._Net_core_Voting.API.Data;
 
-public static class ServiceExtensions
+namespace API_ASP._Net_core_Voting.API.Extensions
 {
-
-    public static IServiceCollection AddSwagger(this IServiceCollection services)
+    public static class ServiceExtensions
     {
-        services.AddEndpointsApiExplorer();
-        services.AddSwaggerGen(options =>
+        public static IServiceCollection AddDatabase(
+            this IServiceCollection services,
+            IConfiguration configuration)
         {
-            options.SwaggerDoc("v1", new()
-            {
-                Title = "VotingAPI",
-                Version = "v1",
-                Description = "API REST para gestión de votaciones, votantes y candidatos."
-            });
-        });
+            services.AddDbContext<AppDbContext>(options =>
+                options.UseSqlServer(
+                    configuration.GetConnectionString("DefaultConnection")
+                )
+            );
 
-        return services;
-    }
-
-    public static IServiceCollection AddCorsPolicy(this IServiceCollection services)
-    {
-        services.AddCors(options =>
+            return services;
+        }
+        public static IServiceCollection AddSwagger(this IServiceCollection services)
         {
-            options.AddPolicy("AllowAll", policy =>
+            services.AddEndpointsApiExplorer();
+            services.AddSwaggerGen(options =>
             {
-                policy.AllowAnyOrigin()
-                      .AllowAnyMethod()
-                      .AllowAnyHeader();
+                options.SwaggerDoc("v1", new()
+                {
+                    Title = "VotingAPI",
+                    Version = "v1",
+                    Description = "API REST para gestión de votaciones, votantes y candidatos."
+                });
             });
-        });
 
-        return services;
+            return services;
+        }
+
+        public static IServiceCollection AddCorsPolicy(this IServiceCollection services)
+        {
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
+
+            return services;
+        }
     }
 }

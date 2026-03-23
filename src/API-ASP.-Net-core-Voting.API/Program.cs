@@ -4,7 +4,7 @@ using API_ASP._Net_core_Voting.API.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.AddSwagger();
+builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddCorsPolicy();
 
 var app = builder.Build();

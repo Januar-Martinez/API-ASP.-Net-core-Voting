@@ -3,57 +3,58 @@ using System.Text.Json;
 using API_ASP._Net_core_Voting.API.Common;
 using API_ASP._Net_core_Voting.API.Common.Errors;
 
-namespace API_ASP._Net_core_Voting.API.Middleware;
-
-
-public class ExceptionMiddleware
+namespace API_ASP._Net_core_Voting.API.Middleware
 {
 
-    private readonly RequestDelegate _next;
-
-    private readonly ILogger<ExceptionMiddleware> _logger;
-
-    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
+    public class ExceptionMiddleware
     {
-        _next = next;
-        _logger = logger;
-    }
 
-    public async Task InvokeAsync(HttpContext context)
-    {
-        try
+        private readonly RequestDelegate _next;
+
+        private readonly ILogger<ExceptionMiddleware> _logger;
+
+        public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
         {
-            await _next(context);
+            _next = next;
+            _logger = logger;
         }
-        catch (AppException ex)
+
+        public async Task InvokeAsync(HttpContext context)
         {
+            try
+            {
+                await _next(context);
+            }
+            catch (AppException ex)
+            {
 
-            _logger.LogWarning("Controlled error: {Message}", ex.Message);
-            await HandleExceptionAsync(context, ex.Message, ex.StatusCode);
+                _logger.LogWarning("Controlled error: {Message}", ex.Message);
+                await HandleExceptionAsync(context, ex.Message, ex.StatusCode);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error: {Message}", ex.Message);
+                await HandleExceptionAsync(context, "An unexpected error occurred", 
+                    (int)HttpStatusCode.InternalServerError);
+            }
         }
-        catch (Exception ex)
+
+        private static async Task HandleExceptionAsync(
+            HttpContext context, string message, int statusCode)
         {
-            _logger.LogError(ex, "Unexpected error: {Message}", ex.Message);
-            await HandleExceptionAsync(context, "An unexpected error occurred", 
-                (int)HttpStatusCode.InternalServerError);
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = statusCode;
+
+            var response = ApiResponse<object>.Fail(message);
+
+            var options = new JsonSerializerOptions 
+            { 
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
+            };
+
+            var json = JsonSerializer.Serialize(response, options);
+
+            await context.Response.WriteAsync(json);
         }
-    }
-
-    private static async Task HandleExceptionAsync(
-        HttpContext context, string message, int statusCode)
-    {
-        context.Response.ContentType = "application/json";
-        context.Response.StatusCode = statusCode;
-
-        var response = ApiResponse<object>.Fail(message);
-
-        var options = new JsonSerializerOptions 
-        { 
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
-        };
-
-        var json = JsonSerializer.Serialize(response, options);
-
-        await context.Response.WriteAsync(json);
     }
 }
