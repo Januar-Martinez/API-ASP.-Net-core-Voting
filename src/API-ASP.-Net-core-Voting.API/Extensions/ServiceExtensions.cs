@@ -1,5 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using API_ASP._Net_core_Voting.API.Data;
+using API_ASP._Net_core_Voting.API.Repositories;
+using API_ASP._Net_core_Voting.API.Repositories.Interfaces;
+using API_ASP._Net_core_Voting.API.Services;
+using API_ASP._Net_core_Voting.API.Services.Interfaces;
 
 namespace API_ASP._Net_core_Voting.API.Extensions
 {
@@ -44,6 +48,24 @@ namespace API_ASP._Net_core_Voting.API.Extensions
                           .AllowAnyHeader();
                 });
             });
+
+            return services;
+        }
+
+        public static IServiceCollection AddRepositories(this IServiceCollection services)
+        {
+            services.AddScoped<IVoterRepository, VoterRepository>();
+            services.AddScoped<ICandidateRepository, CandidateRepository>();
+            services.AddScoped<IVoteRepository, VoteRepository>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddServices(this IServiceCollection services)
+        {
+            services.AddScoped<IVoterService, VoterService>();
+            services.AddScoped<ICandidateService, CandidateService>();
+            services.AddScoped<IVoteService, VoteService>();
 
             return services;
         }
